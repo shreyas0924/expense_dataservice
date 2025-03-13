@@ -1,6 +1,6 @@
 import express, { Request, Response, Application } from "express";
 import { config } from "dotenv";
-// import { Kafka } from "kafkajs";
+import { Kafka } from "kafkajs";
 import { MessageService } from "./service/messageService";
 
 config();
@@ -9,17 +9,17 @@ const app: Application = express();
 app.use(express.json());
 
 const messageService = new MessageService();
-// const kafkaHost = process.env.KAFKA_HOST || "localhost";
-// const kafkaPort = process.env.KAFKA_PORT || "9092";
-// const kafkaBootstrapServers = `${kafkaHost}:${kafkaPort}`;
-// console.log(`Kafka server is ${kafkaBootstrapServers}\n`);
+const kafkaHost = process.env.KAFKA_HOST || "localhost";
+const kafkaPort = process.env.KAFKA_PORT || "9092";
+const kafkaBootstrapServers = `${kafkaHost}:${kafkaPort}`;
+console.log(`Kafka server is ${kafkaBootstrapServers}\n`);
 
-// const kafka = new Kafka({ brokers: [kafkaBootstrapServers] });
-// const producer = kafka.producer();
+const kafka = new Kafka({ brokers: [kafkaBootstrapServers] });
+const producer = kafka.producer();
 
-// (async () => {
-//   await producer.connect();
-// })();
+(async () => {
+  await producer.connect();
+})();
 
 app.post(
   "/v1/ds/message",
@@ -34,10 +34,10 @@ app.post(
 
     if (result) {
       const serializedResult = { ...result, user_id: userId };
-      // await producer.send({
-      //   topic: "expense_service",
-      //   messages: [{ value: JSON.stringify(serializedResult) }],
-      // });
+      await producer.send({
+        topic: process.env.KAFKA_TOPIC_NAME!,
+        messages: [{ value: JSON.stringify(serializedResult) }],
+      });
       return res.json(serializedResult);
     } else {
       return res.status(400).json({ error: "Invalid message format" });
