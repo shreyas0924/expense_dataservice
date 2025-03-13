@@ -1,18 +1,59 @@
-// please write a hello world api in node and express using all the necessary types
+import express, { Request, Response, Application } from "express";
+import { config } from "dotenv";
+// import { Kafka } from "kafkajs";
+import { MessageService } from "./service/messageService";
 
-import express from 'express';
-import { Request, Response } from 'express';
+config();
 
-const app = express();
-const port = 3000;
+const app: Application = express();
+app.use(express.json());
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World!');
+const messageService = new MessageService();
+// const kafkaHost = process.env.KAFKA_HOST || "localhost";
+// const kafkaPort = process.env.KAFKA_PORT || "9092";
+// const kafkaBootstrapServers = `${kafkaHost}:${kafkaPort}`;
+// console.log(`Kafka server is ${kafkaBootstrapServers}\n`);
+
+// const kafka = new Kafka({ brokers: [kafkaBootstrapServers] });
+// const producer = kafka.producer();
+
+// (async () => {
+//   await producer.connect();
+// })();
+
+app.post(
+  "/v1/ds/message",
+  async (req: Request, res: Response): Promise<any> => {
+    const userId = req.headers["x-user-id"] as string;
+    if (!userId) {
+      return res.status(400).json({ error: "x-user-id header is required" });
+    }
+
+    const message = req.body.message;
+    const result = await messageService.processMessage(message);
+
+    if (result) {
+      const serializedResult = { ...result, user_id: userId };
+      // await producer.send({
+      //   topic: "expense_service",
+      //   messages: [{ value: JSON.stringify(serializedResult) }],
+      // });
+      return res.json(serializedResult);
+    } else {
+      return res.status(400).json({ error: "Invalid message format" });
+    }
+  }
+);
+
+app.get("/", (req: Request, res: Response) => {
+  res.send("Hello world");
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+app.get("/health", (req: Request, res: Response) => {
+  res.send("OK");
 });
 
-export default app;
-
+const PORT = process.env.PORT || 8010;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});

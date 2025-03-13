@@ -1,7 +1,7 @@
 import { config } from "dotenv";
 import { Expense, ExpenseSchema } from "./expense";
 import { ChatMistralAI } from "@langchain/mistralai";
-import { ChatPromptTemplate } from "@langchain/core/prompts.cjs";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
 
 config();
 
@@ -14,12 +14,16 @@ export class LLMService {
     this.prompt = ChatPromptTemplate.fromMessages([
       {
         role: "system",
-        content:
-          "You are an expert extraction algorithm. " +
-          "Only extract relevant information from the text. " +
-          "If you do not know the value of an attribute asked to extract, " +
-          "return null for the attribute's value.",
+        content: `You are an expert data extraction algorithm specialized in structured information retrieval. 
+        Your task is to extract only the relevant attributes from the text while preserving accuracy.
+        - Always extract the requested attributes, even if the value is missing or unclear.
+        - If a value is not explicitly mentioned, infer it when possible. Otherwise, return 'unknown' instead of null.
+        - Maintain consistent data formatting (e.g., numbers as strings, currency codes as standard ISO 4217 codes like 'USD', 'INR').
+        - Do not add extra information beyond what is given in the text.
+        
+        Extracted data must be in a structured JSON format.`,
       },
+
       { role: "human", content: "{text}" },
     ]);
 
