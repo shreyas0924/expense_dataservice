@@ -15,9 +15,13 @@
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.10",
     "dataservice": "file:",
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "kafkajs": "^2.2.4",
     "langchain": "^0.3.19",
     "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
   }
 }

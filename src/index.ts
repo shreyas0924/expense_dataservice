@@ -1,7 +1,7 @@
 import express, { Request, Response, Application } from "express";
-import { config } from "dotenv";
 import { Kafka } from "kafkajs";
 import { MessageService } from "./service/messageService";
+import { config } from "dotenv";
 
 config();
 
